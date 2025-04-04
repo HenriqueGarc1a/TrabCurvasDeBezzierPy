@@ -54,6 +54,7 @@ deriv = False
 #controle mouse
 isdown = False
 PosAtualDoMouse = Ponto(0,0)
+continuos = False
 #**********************************************************************
 # Lista de mensagens
 #**********************************************************************
@@ -201,6 +202,7 @@ def display():
     global PontosClicados
     global PosAtualDoMouse
     global atual
+    global continuos
 	# Limpa a tela coma cor de fundo
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
@@ -220,6 +222,9 @@ def display():
 
     glLineWidth(3)
     defineCor(Red)
+    
+    if continuos:
+        DesenhaLinha(PontosClicados[0],PosAtualDoMouse)
     DesenhaPontos()
     DesenhaCurvas()
     #ImprimeMensagens()
@@ -319,74 +324,6 @@ def ConvertePonto(P: Ponto) -> Ponto:
 
     return Ponto(ox, oy, oz)
 
-# ***********************************************************************************
-# Captura o clique do botao esquerdo do mouse sobre a area de desenho
-# ***********************************************************************************
-def mouse(button: int, state: int, x: int, y: int):
-    global PontosClicados
-    global Curvas
-    global isdown
-    global PosAtualDoMouse
-    global atual
-    global deriv
-    
-
-    
-    
-    atual = ConvertePonto(Ponto(x, y))
-
-    if deriv == True:
-        print(atual.x)
-        PontosClicados.append(getPontoDeriv(1.5))
-        deriv = False
-        return
-    
-    if (state == GLUT_UP): 
-        return
-        isdown = False
-        PontosClicados.append(PosAtualDoMouse)
-        atual = PosAtualDoMouse
-        return
-    
-    if (state == GLUT_DOWN): 
-        isdown = True
-        
-    
-    if (button == GLUT_RIGHT_BUTTON and mostra):
-        x = superColide(Ponto(x, y))
-        if x >= 0:
-            Curvas.pop(x)
-
-        return
-    if(button == GLUT_RIGHT_BUTTON):
-        return
-
-    #if(state == GLUT_DOWN and button == GLUT_LEFT_BUTTON):
-
-   # print(f"Mouse clicado na janela: ({x}, {y})")
-    # print(f"Mouse clicado no mundo: ({atual.x}, {atual.y})")
-
-   
-
-    PontosClicados.append(ConvertePonto(Ponto(x, y)))
-
-    print(f"Pontos clicados: {len(PontosClicados)}")
-
-    if len(PontosClicados) == 3:
-        CriaCurvas()
-        PontosClicados.clear()
-        if cont:
-            PontosClicados.append(ConvertePonto(Ponto(x, y)))
-
-            if cont == 2:
-                deriv = True
-                print(deriv)
-                 
-                
-
-    glutPostRedisplay()
-
-
 def getPontoDeriv(howfar):
 
     x = (1-howfar)*Curvas[len(Curvas)-1].Coords[1].x+(howfar)*Curvas[len(Curvas)-1].Coords[2].x
@@ -470,10 +407,63 @@ def miniColide(p1x,p1y,p2x,p2y,x,y):
 # **********************************************************************
 def Motion(x: int, y: int):
     global PosAtualDoMouse
-    P = Ponto(x, y)
-    PosAtualDoMouse = ConvertePonto(P)
-    PosAtualDoMouse.imprime("Mouse:")
-    print('')
+    global continuos
+    PosAtualDoMouse = ConvertePonto(Ponto(x,y))
+    if len(PontosClicados)>1:
+        return
+    if not continuos:
+         PontosClicados.append(ConvertePonto(Ponto(x, y)))
+         continuos = True
+    print("oi do apertado")
+    
+# ***********************************************************************************
+# Captura o clique do botao esquerdo do mouse sobre a area de desenho
+# ***********************************************************************************
+def mouse(button: int, state: int, x: int, y: int):
+    global PontosClicados
+    global Curvas
+    global isdown
+    global PosAtualDoMouse
+    global atual
+    global deriv
+    global continuos
+    
+    atual = ConvertePonto(Ponto(x, y))
+    
+    if deriv == True:
+        print(atual.x)
+        PontosClicados.append(getPontoDeriv(1.5))
+        deriv = False
+        return
+    
+    if (button == GLUT_RIGHT_BUTTON and mostra):
+        x = superColide(Ponto(x, y))
+        if x >= 0:
+            Curvas.pop(x)
+
+        return
+    
+    
+    if (state == GLUT_UP): 
+        print("oi do clique up")
+        if cont == 0 or len(Curvas) == 0:
+            PontosClicados.append(ConvertePonto(Ponto(x, y)))
+        continuos  = False
+    if (state == GLUT_DOWN): 
+         print("oi do clique down")
+        
+    if len(PontosClicados) == 3:
+        CriaCurvas()
+        PontosClicados.clear()
+        if cont:
+            PontosClicados.append(ConvertePonto(Ponto(x, y)))
+
+            if cont == 2:
+                deriv = True
+                print(deriv)
+                          
+    glutPostRedisplay()
+
 
 # ***********************************************************************************
 # Programa Principal
