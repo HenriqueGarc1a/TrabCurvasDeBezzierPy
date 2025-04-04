@@ -166,6 +166,7 @@ def init():
 
 # ***********************************************************************************
 def DesenhaLinha (P1: Ponto, P2: Ponto):
+    glColor(SkyBlue)
     glBegin(GL_LINES)
     glVertex3f(P1.x,P1.y,P1.z)
     glVertex3f(P2.x,P2.y,P2.z)
@@ -182,7 +183,7 @@ def DesenhaCurvas():
 
 # **********************************************************************
 def DesenhaPontos():
-    defineCor(NavyBlue)
+    defineCor(Yellow)
     glPointSize(4)
     glBegin(GL_POINTS)
 
@@ -223,8 +224,13 @@ def display():
     glLineWidth(3)
     defineCor(Red)
     
-    if continuos:
+    if continuos and mostra:
         DesenhaLinha(PontosClicados[0],PosAtualDoMouse)
+    
+    if len(PontosClicados) == 2:
+        DesenhaLinha(PontosClicados[0],PontosClicados[1])
+
+
     DesenhaPontos()
     DesenhaCurvas()
     #ImprimeMensagens()
@@ -410,11 +416,22 @@ def Motion(x: int, y: int):
     global continuos
     PosAtualDoMouse = ConvertePonto(Ponto(x,y))
     if len(PontosClicados)>1:
+        
+        if len(Curvas)> 0:
+            Curvas.pop(len(Curvas)-1)
+
+        if len(PontosClicados) <3:
+                PontosClicados.append(PosAtualDoMouse)
+        else:
+            PontosClicados.pop(2)
+            PontosClicados.append(PosAtualDoMouse)
+
+        CriaCurvas()
         return
     if not continuos:
          PontosClicados.append(ConvertePonto(Ponto(x, y)))
          continuos = True
-    print("oi do apertado")
+   
     
 # ***********************************************************************************
 # Captura o clique do botao esquerdo do mouse sobre a area de desenho
@@ -444,7 +461,7 @@ def mouse(button: int, state: int, x: int, y: int):
         return
     
     
-    if (state == GLUT_UP): 
+    if (state == GLUT_UP and len(PontosClicados) < 3): 
         print("oi do clique up")
         if cont == 0 or len(Curvas) == 0:
             PontosClicados.append(ConvertePonto(Ponto(x, y)))
