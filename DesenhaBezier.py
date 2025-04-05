@@ -415,23 +415,43 @@ def Motion(x: int, y: int):
     global PosAtualDoMouse
     global continuos
     PosAtualDoMouse = ConvertePonto(Ponto(x,y))
-    if len(PontosClicados)>1:
-        
-        if len(Curvas)> 0:
-            Curvas.pop(len(Curvas)-1)
 
-        if len(PontosClicados) <3:
+    if cont ==0 or (cont == 1 and len(Curvas)== 0):
+        if len(PontosClicados)> 1:
+            
+            if len(Curvas)> 0:
+                Curvas.pop(len(Curvas)-1)
+
+            if len(PontosClicados) <3:
+                    PontosClicados.append(PosAtualDoMouse)
+            else:
+                PontosClicados.pop(2)
                 PontosClicados.append(PosAtualDoMouse)
-        else:
-            PontosClicados.pop(2)
-            PontosClicados.append(PosAtualDoMouse)
 
-        CriaCurvas()
+            CriaCurvas()
+            return
+        if not continuos:
+            PontosClicados.append(ConvertePonto(Ponto(x, y)))
+            continuos = True
+    elif cont == 1:
+        if len(PontosClicados)> 1:
+            
+            if len(Curvas)> 0:
+                Curvas.pop(len(Curvas)-1)
+
+            if len(PontosClicados) <3:
+                    PontosClicados.append(PosAtualDoMouse)
+            else:
+                PontosClicados.pop(2)
+                PontosClicados.append(PosAtualDoMouse)
+
+            CriaCurvas()
+            return
+        if not continuos:
+            continuos = True
+            
+    else:
         return
-    if not continuos:
-         PontosClicados.append(ConvertePonto(Ponto(x, y)))
-         continuos = True
-   
     
 # ***********************************************************************************
 # Captura o clique do botao esquerdo do mouse sobre a area de desenho
@@ -463,7 +483,7 @@ def mouse(button: int, state: int, x: int, y: int):
     
     if (state == GLUT_UP and len(PontosClicados) < 3): 
         print("oi do clique up")
-        if cont == 0 or len(Curvas) == 0:
+        if cont == 0 or len(Curvas) == 0 or cont == 1:
             PontosClicados.append(ConvertePonto(Ponto(x, y)))
         continuos  = False
     if (state == GLUT_DOWN): 
